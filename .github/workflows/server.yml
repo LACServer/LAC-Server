@@ -27,14 +27,78 @@ jobs:
       - name: Show server files
         run: |
           echo "===== SERVER FILES ====="
-          find lac -type f -print
-          echo
-          echo "===== EXECUTABLE FILES ====="
-          find lac -type f -executable -print
+          find lac -maxdepth 2 -type f -print
 
-      - name: Test environment
+          echo
+          echo "===== EXECUTABLE ====="
+          ls -lh lac/LAC_Linux_v1.9.6.x86_64
+
+      - name: Make server executable
         run: |
-          echo "L.A. Crimes server files downloaded successfully."
+          chmod +x lac/LAC_Linux_v1.9.6.x86_64
+
+      - name: Create L.A. Crimes config
+        run: |
+          mkdir -p /root/.config/unity3d/MA/LAC
+
+          cat > /root/.config/unity3d/MA/LAC/ServerConfig.txt <<'EOF'
+          (Moderator)
+          admin code=CHANGE-ME
+          lock down=true
+
+          (Basic)
+          restart timer=never
+          max players=16
+          map name=TrainFacility
+          starting port=7777
+
+          (Server List)
+          share to community=true
+          server language=English
+          server password=none
+
+          (Roleplay)
+          username=HOST
+          password=0000
+          EOF
+
+          echo "===== CONFIG ====="
+          cat /root/.config/unity3d/MA/LAC/ServerConfig.txt
+
+      - name: Start L.A. Crimes server
+        run: |
+          cd lac
+
+          echo "Starting L.A. Crimes server..."
+          echo "Port: 7777"
+
+          ./LAC_Linux_v1.9.6.x86_64 \
+            -batchmode \
+            -nographics \
+            > server.log 2>&1 &
+
+          SERVER_PID=$!
+
+          echo "Server PID: $SERVER_PID"
+
+          sleep 10
+
+          echo
+          echo "===== SERVER LOG ====="
+          cat server.log
+
+          echo
+          echo "===== PROCESS ====="
+          ps aux | grep LAC_Linux | grep -v grep || true
+
+      - name: Keep server running
+        run: |
+          echo "======================================"
+          echo "L.A. Crimes server is running!"
+          echo "Port: 7777"
+          echo "======================================"
+
+          sleep 20000          echo "L.A. Crimes server files downloaded successfully."
           echo "This workflow is currently being used to identify the server executable."
 
       - name: Keep runner alive
