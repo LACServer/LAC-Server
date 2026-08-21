@@ -1,4 +1,4 @@
-name: L.A. Crimes Test Server
+name: L.A.C. Test Server
 
 on:
   workflow_dispatch:
