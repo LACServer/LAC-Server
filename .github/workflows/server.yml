@@ -1,0 +1,102 @@
+name: L.A.C. Test Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip wget
+
+      - name: Download L.A. Crimes server
+        run: |
+          wget --timeout=30 --tries=5 \
+            -O LAC_Linux_v1.9.6.zip \
+            "https://lacrimesonline.com/builds/LAC_Linux_v1.9.6.zip"
+
+          echo "Download completed."
+          ls -lh LAC_Linux_v1.9.6.zip
+
+      - name: Extract server
+        run: |
+          mkdir -p lac
+          unzip -q LAC_Linux_v1.9.6.zip -d lac
+
+      - name: Check server executable
+        run: |
+          echo "===== SERVER EXECUTABLE ====="
+          ls -lh lac/LAC_Linux_v1.9.6.x86_64
+
+      - name: Make server executable
+        run: |
+          chmod +x lac/LAC_Linux_v1.9.6.x86_64
+
+      - name: Create L.A. Crimes config
+        run: |
+          mkdir -p /root/.config/unity3d/MA/LAC
+
+          cat > /root/.config/unity3d/MA/LAC/ServerConfig.txt <<'EOF'
+          (Moderator)
+          admin code=CHANGE-ME
+          lock down=true
+
+          (Basic)
+          restart timer=never
+          max players=16
+          map name=TrainFacility
+          starting port=7777
+
+          (Server List)
+          share to community=true
+          server language=English
+          server password=none
+
+          (Roleplay)
+          username=HOST
+          password=0000
+          EOF
+
+          echo "Configuration created."
+
+      - name: Start L.A. Crimes server
+        run: |
+          cd lac
+
+          echo "======================================"
+          echo "Starting L.A. Crimes server..."
+          echo "Port: 7777"
+          echo "======================================"
+
+          ./LAC_Linux_v1.9.6.x86_64 \
+            -batchmode \
+            -nographics \
+            > server.log 2>&1 &
+
+          SERVER_PID=$!
+
+          echo "Server PID: $SERVER_PID"
+
+          sleep 10
+
+          echo
+          echo "===== LAC SERVER LOG ====="
+          cat server.log || true
+
+          echo
+          echo "===== SERVER PROCESS ====="
+          ps aux | grep LAC_Linux | grep -v grep || true
+
+      - name: Keep server running
+        run: |
+          echo "======================================"
+          echo "L.A. Crimes server is running!"
+          echo "Port: 7777"
+          echo "======================================"
+
+          sleep 20000
