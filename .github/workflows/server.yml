@@ -17,7 +17,7 @@ jobs:
       - name: Download L.A. Crimes Linux server
         run: |
           wget -O LAC_Linux_v1.9.6.zip \
-            "https://www.lacrimesonline.com/builds/LAC_Linux_v1.9.6.zip"
+            "https://lacrimesonline.com/builds/LAC_Linux_v1.9.6.zip"
 
       - name: Extract server
         run: |
