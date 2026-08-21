@@ -14,9 +14,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y unzip wget
 
-      - name: Download L.A. Crimes Linux server
+      - name: Download L.A. Crimes server
         run: |
-          wget -O LAC_Linux_v1.9.6.zip \
+          wget --timeout=30 --tries=5 \
+            -O LAC_Linux_v1.9.6.zip \
             "https://lacrimesonline.com/builds/LAC_Linux_v1.9.6.zip"
 
       - name: Extract server
@@ -24,20 +25,15 @@ jobs:
           mkdir -p lac
           unzip -q LAC_Linux_v1.9.6.zip -d lac
 
-      - name: Show server files
+      - name: Check server
         run: |
-          echo "===== SERVER FILES ====="
-          find lac -maxdepth 2 -type f -print
-
-          echo
-          echo "===== EXECUTABLE ====="
           ls -lh lac/LAC_Linux_v1.9.6.x86_64
 
       - name: Make server executable
         run: |
           chmod +x lac/LAC_Linux_v1.9.6.x86_64
 
-      - name: Create L.A. Crimes config
+      - name: Create config
         run: |
           mkdir -p /root/.config/unity3d/MA/LAC
 
@@ -62,15 +58,11 @@ jobs:
           password=0000
           EOF
 
-          echo "===== CONFIG ====="
-          cat /root/.config/unity3d/MA/LAC/ServerConfig.txt
-
       - name: Start L.A. Crimes server
         run: |
           cd lac
 
           echo "Starting L.A. Crimes server..."
-          echo "Port: 7777"
 
           ./LAC_Linux_v1.9.6.x86_64 \
             -batchmode \
@@ -83,25 +75,14 @@ jobs:
 
           sleep 10
 
-          echo
           echo "===== SERVER LOG ====="
-          cat server.log
+          cat server.log || true
 
-          echo
           echo "===== PROCESS ====="
           ps aux | grep LAC_Linux | grep -v grep || true
 
       - name: Keep server running
         run: |
-          echo "======================================"
-          echo "L.A. Crimes server is running!"
+          echo "L.A. Crimes server test environment is running."
           echo "Port: 7777"
-          echo "======================================"
-
-          sleep 20000          echo "L.A. Crimes server files downloaded successfully."
-          echo "This workflow is currently being used to identify the server executable."
-
-      - name: Keep runner alive
-        run: |
-          echo "Test environment is running."
           sleep 20000
